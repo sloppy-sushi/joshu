@@ -1069,8 +1069,9 @@ $.extend( $.validator, {
 				element = this.findByName( element.name );
 			}
 
-			// Always apply ignore filter: use find() so ignore is always a CSS selector, not HTML (prevents XSS)
-			var ignoreSet = $( this.currentForm || document ).find( this.settings.ignore );
+			// Always apply ignore filter: use jQuery.find() so ignore is always a CSS selector, never HTML (prevents XSS)
+			var context = this.currentForm || document;
+			var ignoreSet = jQuery.find( this.settings.ignore, context );
 			return $( element ).not( ignoreSet )[ 0 ];
 		},
 
