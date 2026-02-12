@@ -15,6 +15,16 @@ public class EmailService : IEmailService
         _logger = logger;
     }
 
+    /// <summary>Redact email for logging to avoid PII and log injection. Returns e.g. "***@domain.com".</summary>
+    private static string RedactEmailForLog(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return "(none)";
+        var at = email.IndexOf('@', StringComparison.Ordinal);
+        if (at <= 0) return "***";
+        var domain = email[(at + 1)..].Trim();
+        return string.IsNullOrEmpty(domain) ? "***" : "***@" + domain;
+    }
+
     public async Task<bool> SendAsync(string toEmail, string subject, string body, CancellationToken ct = default)
     {
         var host = _config["Email:SmtpHost"];
@@ -53,21 +63,17 @@ public class EmailService : IEmailService
             await client.SendAsync(message, ct);
             await client.DisconnectAsync(true, ct);
 
-            _logger.LogInformation("Email sent to {To}", toEmail);
+            _logger.LogInformation("Email sent successfully to {Recipient}.", RedactEmailForLog(toEmail));
             return true;
         }
-        catch (MailKit.Security.AuthenticationException ex)
+        catch (MailKit.Security.AuthenticationException)
         {
-            // Safe diagnostic: never log the password. Gmail App Passwords are 16 chars (no spaces).
-            var at = user?.IndexOf('@', StringComparison.Ordinal) ?? -1;
-            var userHint = (string.IsNullOrEmpty(user) || at <= 0) ? "?" : $"{user[0]}***@{user[(at + 1)..]}";
-            _logger.LogError("SMTP login rejected. Check: (1) Email:UserName is your full Gmail address. (2) Email:Password is a 16-character App Password from Google Account → Security → 2-Step Verification → App passwords. Current config: User like {UserHint}, password length {PwdLen} chars (expect 16 for App Password).", userHint, password?.Length ?? 0);
-            _logger.LogError(ex, "Failed to send email to {To}: {Message}", toEmail, ex.Message);
+            _logger.LogError("SMTP authentication failed. Check Email:UserName (full Gmail address) and Email:Password (16-char App Password from Google Account → Security → 2-Step Verification → App passwords).");
             return false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send email to {To}: {Message}", toEmail, ex.Message);
+            _logger.LogError(ex, "Failed to send email to {Recipient}.", RedactEmailForLog(toEmail));
             return false;
         }
     }
