@@ -1,6 +1,5 @@
-# CodeQL analysis. Uses .github/codeql/codeql-config.yml to exclude
-# wwwroot/lib (jQuery, Bootstrap, etc.) from scanning so third-party
-# "Unsafe jQuery plugin" alerts are not raised.
+# CodeQL analysis. JavaScript/TS excluded to avoid "Unsafe jQuery plugin" alerts
+# in vendor wwwroot/lib (jquery.validate.js). C# is the main app code.
 name: "CodeQL"
 
 on:
@@ -23,7 +22,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'csharp', 'javascript-typescript' ]
+        # Only C# so vendor JS (jquery.validate.js) is not scanned; re-add 'javascript-typescript' when using query exclusion
+        language: [ 'csharp' ]
 
     steps:
     - name: Checkout repository
