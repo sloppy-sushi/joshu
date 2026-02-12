@@ -1,0 +1,73 @@
+@model AceJobAgency.Models.LoginViewModel
+@inject IConfiguration Configuration
+@{
+    ViewData["Title"] = "Login";
+    var siteKey = Configuration["RecaptchaSettings:SiteKey"] ?? "";
+    var useRecaptcha = !string.IsNullOrEmpty(siteKey) && !siteKey.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase);
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="card-title h4 mb-2">Login – Ace Job Agency</h2>
+                <p class="text-muted small mb-3">After you sign in, we’ll send a verification code to your email (2FA).</p>
+                @if (TempData["Message"] != null)
+                {
+                    <div class="alert alert-success py-2 mb-3">@TempData["Message"]</div>
+                }
+                @if (TempData["ForgotPasswordSent"] != null)
+                {
+                    <div class="alert alert-info py-2 mb-3">@TempData["ForgotPasswordSent"]</div>
+                }
+                <form asp-action="Login" method="post" id="loginForm">
+                    <input type="hidden" asp-for="RecaptchaToken" id="recaptchaToken" />
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" autocomplete="email" placeholder="Enter your email address" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" autocomplete="current-password" placeholder="Enter your password" />
+                        <div class="mt-1">
+                            <a asp-action="ForgotPassword" class="small text-muted">Forgot password?</a>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <a asp-action="Register" class="btn btn-link btn-sm p-0">Create an account</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (useRecaptcha)
+    {
+        <script src="https://www.google.com/recaptcha/api.js?render=@siteKey"></script>
+    }
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var form = this;
+            var useRecaptcha = @(useRecaptcha ? "true" : "false");
+            if (!useRecaptcha) {
+                form.querySelector('#recaptchaToken').value = 'disabled';
+                form.submit();
+                return;
+            }
+            grecaptcha.ready(function() {
+                grecaptcha.execute('@siteKey', { action: 'login' }).then(function(token) {
+                    form.querySelector('#recaptchaToken').value = token;
+                    form.submit();
+                });
+            });
+        });
+    </script>
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

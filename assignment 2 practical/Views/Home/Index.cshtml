@@ -1,0 +1,47 @@
+@model AceJobAgency.Models.HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h2>Welcome, @Model.FirstName @Model.LastName</h2>
+<p>Your membership details (NRIC is decrypted for display only):</p>
+<dl class="row">
+    <dt class="col-sm-3">First Name</dt>
+    <dd class="col-sm-9">@Model.FirstName</dd>
+    <dt class="col-sm-3">Last Name</dt>
+    <dd class="col-sm-9">@Model.LastName</dd>
+    <dt class="col-sm-3">Gender</dt>
+    <dd class="col-sm-9">@Model.Gender</dd>
+    <dt class="col-sm-3">NRIC</dt>
+    <dd class="col-sm-9">@Model.Nric</dd>
+    <dt class="col-sm-3">Email</dt>
+    <dd class="col-sm-9">@Model.Email</dd>
+    <dt class="col-sm-3">Date of Birth</dt>
+    <dd class="col-sm-9">@Model.DateOfBirth.ToString("yyyy-MM-dd")</dd>
+    @if (!string.IsNullOrWhiteSpace(Model.WhoAmI))
+    {
+        <dt class="col-sm-3">Who Am I</dt>
+        <dd class="col-sm-9">@Model.WhoAmI</dd>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.ResumeFileName))
+    {
+        <dt class="col-sm-3">Resume</dt>
+        <dd class="col-sm-9"><a href="~/@Model.ResumeFileName" target="_blank">Download</a></dd>
+    }
+</dl>
+
+<a asp-controller="Account" asp-action="ChangePassword" class="btn btn-outline-primary me-2">Change Password</a>
+<form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+    <button type="submit" class="btn btn-outline-secondary">Logout</button>
+</form>
+
+@section Scripts {
+    <script>
+        // Prevent back button from showing cached profile after logout (bfcache)
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.location.replace('@Url.Action("Login", "Account")');
+            }
+        });
+    </script>
+}
