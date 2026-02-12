@@ -684,7 +684,8 @@ $.extend( $.validator, {
 		},
 
 		clean: function( selector ) {
-			return $( selector )[ 0 ];
+			// Use find() so selector is always treated as CSS selector, not HTML (prevents XSS)
+			return $( document ).find( selector )[ 0 ];
 		},
 
 		errors: function() {
@@ -1068,8 +1069,9 @@ $.extend( $.validator, {
 				element = this.findByName( element.name );
 			}
 
-			// Always apply ignore filter
-			return $( element ).not( this.settings.ignore )[ 0 ];
+			// Always apply ignore filter: use find() so ignore is always a CSS selector, not HTML (prevents XSS)
+			var ignoreSet = $( this.currentForm || document ).find( this.settings.ignore );
+			return $( element ).not( ignoreSet )[ 0 ];
 		},
 
 		checkable: function( element ) {
