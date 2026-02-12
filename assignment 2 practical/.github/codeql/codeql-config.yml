@@ -1,0 +1,7 @@
+# CodeQL config: exclude third-party front-end libs from security scanning.
+# Alerts in jquery.validate.js etc. are in vendor code we do not modify.
+# See: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/customizing-code-scanning#using-a-custom-configuration-file
+name: "Exclude third-party libs"
+paths-ignore:
+  - "**/wwwroot/lib/**"
+  - "**/node_modules/**"
