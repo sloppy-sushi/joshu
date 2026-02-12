@@ -1072,6 +1072,17 @@ $.extend( $.validator, {
 			// Always apply ignore filter: use jQuery.find() so ignore is always a CSS selector, never HTML (prevents XSS)
 			var context = this.currentForm || document;
 			var ignoreSet = jQuery.find( this.settings.ignore, context );
+
+			// Normalize so we always pass a DOM element to $(), never a string (avoids jQuery interpreting strings as HTML)
+			if ( element && element.jquery ) {
+				element = element[ 0 ];
+			} else if ( typeof element === "string" ) {
+				var found = jQuery.find( element, context );
+				element = found.length ? found[ 0 ] : undefined;
+			}
+			if ( !element ) {
+				return undefined;
+			}
 			return $( element ).not( ignoreSet )[ 0 ];
 		},
 
