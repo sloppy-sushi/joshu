@@ -1,10 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\obj\\Debug",
-    "\\obj\\Debug\\net8.0",
-    "\\obj\\Release"
+    ""
   ],
-  "SelectedNode": "\\acejob.db",
+  "SelectedNode": "\\AceJobAgency.csproj",
   "PreviewInSolutionExplorer": false
 }

@@ -1,7 +1,10 @@
-# CodeQL config: exclude third-party front-end libs from security scanning.
-# Alerts in jquery.validate.js etc. are in vendor code we do not modify.
-# See: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/customizing-code-scanning#using-a-custom-configuration-file
+# CodeQL config: exclude third-party libs and disable noisy jQuery plugin query.
+# - paths-ignore: do not scan vendor files under wwwroot/lib
+# - query-filters: disable js/unsafe-jquery-plugin (alerts in jquery.validate.js we do not modify)
 name: "Exclude third-party libs"
 paths-ignore:
   - "**/wwwroot/lib/**"
   - "**/node_modules/**"
+query-filters:
+  - exclude:
+      id: js/unsafe-jquery-plugin
