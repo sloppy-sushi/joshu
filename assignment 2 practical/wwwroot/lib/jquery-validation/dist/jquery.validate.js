@@ -1087,7 +1087,11 @@ $.extend( $.validator, {
 			if ( !element || element.nodeType !== 1 ) {
 				return undefined;
 			}
-			return $( element ).not( ignoreSet )[ 0 ];
+			// Apply ignore filter without passing element to $() (avoids CodeQL unsafe-jquery-plugin: no user/option data into $())
+			if ( ignoreSet.index( element ) >= 0 ) {
+				return undefined;
+			}
+			return element;
 		},
 
 		checkable: function( element ) {
