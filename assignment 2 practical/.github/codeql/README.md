@@ -1,20 +1,27 @@
-# CodeQL configuration
+# CodeQL and "Unsafe jQuery plugin" alerts
 
-This folder contains `codeql-config.yml`, which:
+## Why you see those alerts
 
-- **paths-ignore:** Excludes `wwwroot/lib` and jQuery Validation from analysis (vendor code).
-- **query-filters:** Disables the `js/unsafe-jquery-plugin` query so "Unsafe jQuery plugin" alerts are not raised.
+CodeQL scans JavaScript and flags **jquery.validate.js** in `wwwroot/lib` as "Unsafe jQuery plugin." That file is **third-party vendor code**; we don’t fix it in place, and fixing one line often causes new alerts elsewhere.
 
-**If you still see "Unsafe jQuery plugin" alerts:** The workflow that runs CodeQL must use this config. Open the workflow that runs CodeQL (e.g. `.github/workflows/codeql.yml` or `codeql-analysis.yml`). In the **Initialize CodeQL** step, ensure it has:
+## What this repo does
 
-```yaml
-- name: Initialize CodeQL
-  uses: github/codeql-action/init@v4
-  with:
-    languages: ${{ matrix.language }}
-    config-file: ./.github/codeql/codeql-config.yml
-```
+- **`.github/workflows/codeql.yml`** runs CodeQL **only for C#** (no JavaScript/TypeScript).
+- So **jquery.validate.js is not scanned** and new "Unsafe jQuery plugin" alerts should not appear.
 
-If you enabled Code scanning from the Security tab, GitHub may have created a different workflow that does **not** include `config-file`. Add the `config-file` line to that workflow, or use the workflow in this repo that already includes it.
+## If you still see "Unsafe jQuery plugin" alerts
 
-After updating the workflow, push and re-run CodeQL. Dismiss any existing "Unsafe jQuery plugin" alerts in the Security tab (e.g. "Won't fix" or "False positive").
+1. **Dismiss existing alerts**  
+   They may be from an old run when JS was still in the matrix.  
+   In GitHub: **Security → Code scanning** → open each alert → **Dismiss** → e.g. **"Won't fix"** or **"False positive".**
+
+2. **Use only one CodeQL workflow**  
+   If you have **another** CodeQL workflow (e.g. `codeql-analysis.yml` from the Security tab):
+   - Either **delete** that workflow so only `codeql.yml` runs, or  
+   - Edit it and **remove** `javascript-typescript` from the `matrix.language` list so it only runs C#.
+
+3. **Confirm what’s on the default branch**  
+   The workflow that runs on push/PR is the one on your **default branch** (e.g. `main`).  
+   Make sure that file has `language: [ 'csharp' ]` only (no `javascript-typescript`).
+
+After that, new CodeQL runs won’t scan `wwwroot/lib`, and you can keep the app’s C# code in CodeQL without those jQuery plugin alerts.

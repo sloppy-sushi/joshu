@@ -1,5 +1,5 @@
-# CodeQL analysis. JavaScript/TS excluded to avoid "Unsafe jQuery plugin" alerts
-# in vendor wwwroot/lib (jquery.validate.js). C# is the main app code.
+# CodeQL: C# only. Do NOT add 'javascript-typescript' — it scans wwwroot/lib
+# (jquery.validate.js) and raises "Unsafe jQuery plugin" alerts we cannot fix in vendor code.
 name: "CodeQL"
 
 on:
