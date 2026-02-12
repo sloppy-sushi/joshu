@@ -1069,9 +1069,13 @@ $.extend( $.validator, {
 				element = this.findByName( element.name );
 			}
 
-			// Always apply ignore filter: use jQuery.find() so ignore is always a CSS selector, never HTML (prevents XSS)
+			// Always apply ignore filter: normalize ignore so it is always a string selector for jQuery.find, never HTML
 			var context = this.currentForm || document;
-			var ignoreSet = jQuery.find( this.settings.ignore, context );
+			var ignore = this.settings.ignore;
+			if ( typeof ignore !== "string" ) {
+				ignore = ignore == null ? "" : String( ignore );
+			}
+			var ignoreSet = ignore ? jQuery.find( ignore, context ) : jQuery( [] );
 
 			// Normalize so we always pass a DOM element to $(), never a string (avoids jQuery interpreting strings as HTML)
 			if ( element && element.jquery ) {
@@ -1080,7 +1084,7 @@ $.extend( $.validator, {
 				var found = jQuery.find( element, context );
 				element = found.length ? found[ 0 ] : undefined;
 			}
-			if ( !element ) {
+			if ( !element || element.nodeType !== 1 ) {
 				return undefined;
 			}
 			return $( element ).not( ignoreSet )[ 0 ];
