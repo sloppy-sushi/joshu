@@ -392,9 +392,10 @@ $.extend( $.validator, {
 	prototype: {
 
 		init: function() {
-			this.labelContainer = $( this.settings.errorLabelContainer );
+			var ctx = this.currentForm || document;
+			this.labelContainer = jQuery.find( this.settings.errorLabelContainer, ctx );
 			this.errorContext = this.labelContainer.length && this.labelContainer || $( this.currentForm );
-			this.containers = $( this.settings.errorContainer ).add( this.settings.errorLabelContainer );
+			this.containers = jQuery.find( this.settings.errorContainer, ctx ).add( jQuery.find( this.settings.errorLabelContainer, ctx ) );
 			this.submitted = {};
 			this.valueCache = {};
 			this.pendingRequest = 0;
@@ -436,7 +437,7 @@ $.extend( $.validator, {
 				var validator = $.data( this.form, "validator" ),
 					eventType = "on" + event.type.replace( /^validate/, "" ),
 					settings = validator.settings;
-				if ( settings[ eventType ] && !$( this ).is( settings.ignore ) ) {
+				if ( settings[ eventType ] && jQuery.find( settings.ignore, currentForm || document ).index( this ) < 0 ) {
 					settings[ eventType ].call( validator, this, event );
 				}
 			}
@@ -690,7 +691,7 @@ $.extend( $.validator, {
 
 		errors: function() {
 			var errorClass = this.settings.errorClass.split( " " ).join( "." );
-			return $( this.settings.errorElement + "." + errorClass, this.errorContext );
+			return this.errorContext.find( this.settings.errorElement + "." + errorClass );
 		},
 
 		resetInternals: function() {
@@ -964,8 +965,8 @@ $.extend( $.validator, {
 				error.html( message );
 			} else {
 
-				// Create error element
-				error = $( "<" + this.settings.errorElement + ">" )
+				// Create error element (use createElement so tag name is never interpreted as HTML selector)
+				error = $( document.createElement( this.settings.errorElement ) )
 					.attr( "id", elementID + "-error" )
 					.addClass( this.settings.errorClass )
 					.html( message || "" );
@@ -976,7 +977,7 @@ $.extend( $.validator, {
 
 					// Make sure the element is visible, even in IE
 					// actually showing the wrapped element is handled elsewhere
-					place = error.hide().show().wrap( "<" + this.settings.wrapper + "/>" ).parent();
+					place = error.hide().show().wrap( $( document.createElement( this.settings.wrapper ) ) ).parent();
 				}
 				if ( this.labelContainer.length ) {
 					this.labelContainer.append( place );
