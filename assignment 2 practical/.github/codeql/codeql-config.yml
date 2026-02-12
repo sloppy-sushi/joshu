@@ -1,9 +1,11 @@
-# CodeQL config: exclude third-party libs and disable noisy jQuery plugin query.
-# - paths-ignore: do not scan vendor files under wwwroot/lib
-# - query-filters: disable js/unsafe-jquery-plugin (alerts in jquery.validate.js we do not modify)
+# CodeQL config: exclude third-party libs and disable Unsafe jQuery plugin query.
+# - paths-ignore: do not scan vendor files (jquery.validate.js etc.)
+# - query-filters: disable js/unsafe-jquery-plugin so it never runs
 name: "Exclude third-party libs"
 paths-ignore:
   - "**/wwwroot/lib/**"
+  - "**/lib/jquery-validation/**"
+  - "**/jquery.validate.js"
   - "**/node_modules/**"
 query-filters:
   - exclude:
