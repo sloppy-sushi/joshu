@@ -15,16 +15,6 @@ public class EmailService : IEmailService
         _logger = logger;
     }
 
-    /// <summary>Redact email for logging to avoid PII and log injection. Returns e.g. "***@domain.com".</summary>
-    private static string RedactEmailForLog(string? email)
-    {
-        if (string.IsNullOrWhiteSpace(email)) return "(none)";
-        var at = email.IndexOf('@', StringComparison.Ordinal);
-        if (at <= 0) return "***";
-        var domain = email[(at + 1)..].Trim();
-        return string.IsNullOrEmpty(domain) ? "***" : "***@" + domain;
-    }
-
     public async Task<bool> SendAsync(string toEmail, string subject, string body, CancellationToken ct = default)
     {
         var host = _config["Email:SmtpHost"];
@@ -63,7 +53,7 @@ public class EmailService : IEmailService
             await client.SendAsync(message, ct);
             await client.DisconnectAsync(true, ct);
 
-            _logger.LogInformation("Email sent successfully to {Recipient}.", RedactEmailForLog(toEmail));
+            _logger.LogInformation("Email sent successfully.");
             return true;
         }
         catch (MailKit.Security.AuthenticationException)
@@ -73,7 +63,7 @@ public class EmailService : IEmailService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send email to {Recipient}.", RedactEmailForLog(toEmail));
+            _logger.LogError(ex, "Failed to send email.");
             return false;
         }
     }
